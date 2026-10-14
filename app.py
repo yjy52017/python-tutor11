@@ -5,7 +5,7 @@ from content import LESSONS, PROJECT_CHALLENGE
 
 st.set_page_config(page_title="Python自学助手", page_icon="🐍", layout="wide")
 
-st.title("🐍 高中Python自学助手")
+st.title("🐍 樟树市滨江中学高一Python自学助手")
 st.markdown("---")
 
 st.sidebar.header("📚 课程目录")
