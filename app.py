@@ -91,11 +91,9 @@ elif selected == "🎮 综合项目":
     st.subheader(PROJECT_CHALLENGE["title"])
     st.write(PROJECT_CHALLENGE["description"])
 
-    # ---- 查看提示 (升级美化版) ----
+    # ---- 查看提示 ----
     if st.button("💡 查看提示"):
-        # 提取提示代码
         code_text = PROJECT_CHALLENGE["reference_code"]
-        # 使用下拉框展示，默认展开，保持页面整洁
         with st.expander("👇 点击复制下方的参考代码：", expanded=True):
             st.code(code_text, language="python")
 
@@ -132,12 +130,13 @@ elif selected == "🎮 综合项目":
 
     st.markdown("---")
 
-    # ---- 游戏初始化 ----
+    # ---- 游戏初始化（增加 show_secret 变量） ----
     import random
     if 'secret' not in st.session_state:
         st.session_state.secret = random.randint(1, 100)
         st.session_state.count = 0
         st.session_state.message = "游戏开始了！请猜一个 1-100 的数字。"
+        st.session_state.show_secret = False  # 新增：默认隐藏答案
 
     guess = st.slider("请调整滑块选择一个数字：", 1, 100, 50)
     st.write(f"**你当前选择的数字是：{guess}**")
@@ -157,8 +156,17 @@ elif selected == "🎮 综合项目":
 
     st.info(st.session_state.message)
 
+    # ---- 新增：猜中后展示隐藏的答案对比模块 ----
+    if st.session_state.get("show_secret", False):
+        st.markdown("---")
+        st.success(f"🎉 **谜底揭晓！** 电脑随机生成的数字正是 **{st.session_state.secret}**！")
+        st.metric(label="你猜对的数字", value=guess)
+        st.metric(label="电脑生成的数字", value=st.session_state.secret)
+        st.balloons()  # 撒花庆祝！
+
     if st.button("🔄 重置游戏"):
         st.session_state.secret = random.randint(1, 100)
         st.session_state.count = 0
         st.session_state.message = "新游戏开始！请猜一个 1-100 的数字。"
+        st.session_state.show_secret = False  # 重置时也要隐藏答案
         st.rerun()
