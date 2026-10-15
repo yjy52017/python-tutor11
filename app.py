@@ -91,9 +91,13 @@ elif selected == "🎮 综合项目":
     st.subheader(PROJECT_CHALLENGE["title"])
     st.write(PROJECT_CHALLENGE["description"])
 
-    # ---- 查看提示 ----
+    # ---- 查看提示 (升级美化版) ----
     if st.button("💡 查看提示"):
-        st.info("💡 提示：\n" + PROJECT_CHALLENGE["reference_code"])
+        # 提取提示代码
+        code_text = PROJECT_CHALLENGE["reference_code"]
+        # 使用下拉框展示，默认展开，保持页面整洁
+        with st.expander("👇 点击复制下方的参考代码：", expanded=True):
+            st.code(code_text, language="python")
 
     # ---- 智能答疑 ----
     if st.button("🤖 智能答疑"):
@@ -119,7 +123,7 @@ elif selected == "🎮 综合项目":
 学生的问题是：{project_question}
 请用简单易懂的语言回答，必要时给出代码示例。"""
                 resp = client.chat.completions.create(
-                    model=st.secrets.get("OPENAI_MODEL", "gpt-3.5-turbo"),
+                    model=st.secrets.get("OPENAI_MODEL", "glm-4-flash"),
                     messages=[{"role": "user", "content": context}],
                 )
                 st.success(resp.choices[0].message.content)
