@@ -133,6 +133,7 @@ elif selected == "🎮 综合项目":
     # ---- 游戏初始化（增加 show_secret 变量） ----
     import random
     if 'secret' not in st.session_state:
+        st.session_state.show_secret = False  # 必须加这行，保证游戏一开始是隐藏的
         st.session_state.secret = random.randint(1, 100)
         st.session_state.count = 0
         st.session_state.message = "游戏开始了！请猜一个 1-100 的数字。"
