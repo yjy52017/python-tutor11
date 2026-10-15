@@ -90,44 +90,70 @@ if lesson:
 elif selected == "🎮 综合项目":
     st.subheader(PROJECT_CHALLENGE["title"])
     st.write(PROJECT_CHALLENGE["description"])
-    
-    # 1. 全局初始化游戏状态（确保游戏始终能运行）
+
+    # ---- 查看提示 ----
+    if st.button("💡 查看提示"):
+        st.info("💡 提示：\n" + PROJECT_CHALLENGE["reference_code"])
+
+    # ---- 智能答疑 ----
+    if st.button("🤖 智能答疑"):
+        st.session_state.show_project_chat = True
+
+    if st.session_state.get("show_project_chat", False):
+        st.markdown("---")
+        st.subheader("🤖 关于本项目的智能答疑")
+        st.write("你可以问我：这段代码是什么意思？为什么要用 session_state？怎么修改难度？")
+
+        project_question = st.text_input("输入你的问题：", key="project_q_input")
+        if project_question and st.button("发送", key="project_send_btn"):
+            try:
+                from openai import OpenAI
+                client = OpenAI(
+                    base_url=st.secrets["OPENAI_BASE_URL"],
+                    api_key=st.secrets["OPENAI_API_KEY"],
+                )
+                context = f"""你是一个耐心的编程老师。学生正在做这个综合项目：
+题目：{PROJECT_CHALLENGE['title']}
+要求：{PROJECT_CHALLENGE['description']}
+参考代码：{PROJECT_CHALLENGE['reference_code']}
+学生的问题是：{project_question}
+请用简单易懂的语言回答，必要时给出代码示例。"""
+                resp = client.chat.completions.create(
+                    model=st.secrets.get("OPENAI_MODEL", "gpt-3.5-turbo"),
+                    messages=[{"role": "user", "content": context}],
+                )
+                st.success(resp.choices[0].message.content)
+            except Exception as e:
+                st.error(f"AI 回复失败：{e}")
+
+    st.markdown("---")
+
+    # ---- 游戏初始化 ----
     import random
     if 'secret' not in st.session_state:
         st.session_state.secret = random.randint(1, 100)
         st.session_state.count = 0
         st.session_state.message = "游戏开始了！请猜一个 1-100 的数字。"
 
-    # 2. 提供滑动条（学生无需再写这行，直接使用即可）
     guess = st.slider("请调整滑块选择一个数字：", 1, 100, 50)
-    st.markdown("---")
     st.write(f"**你当前选择的数字是：{guess}**")
-    
-    # 3. 学生的代码区域
+
     user_code = st.text_area(
-        "✏️ 在这里写你的项目代码（逻辑判断部分）：", 
+        "✏️ 在这里写你的项目代码（逻辑判断部分）：",
         height=300,
-        key="project_code_area"
+        key="project_code_area",
     )
-    
-    # 4. 运行逻辑（把你的代码和学生的代码融合）
+
     if st.button("▶️ 运行/猜数字", type="primary"):
         try:
-            # 准备一个安全的执行环境，并自动引入必要的模块
             safe_globals = {"__builtins__": __builtins__, "st": st, "random": random, "guess": guess}
-            # 执行学生写的代码
             exec(user_code, safe_globals)
-            # 如果学生没有改变 message，则显示默认成功提示
-            if st.session_state.message == "游戏开始了！请猜一个 1-100 的数字。":
-                st.session_state.message = "请点击按钮猜数字，或者修改你的代码！"
         except Exception as e:
             st.error(f"❌ 代码运行出错：{e}")
 
-    # 5. 显示反馈结果
     st.info(st.session_state.message)
-    
-    # 6. 重置游戏按钮
-    if st.button("🔄 重置游戏（重新生成随机数）"):
+
+    if st.button("🔄 重置游戏"):
         st.session_state.secret = random.randint(1, 100)
         st.session_state.count = 0
         st.session_state.message = "新游戏开始！请猜一个 1-100 的数字。"
