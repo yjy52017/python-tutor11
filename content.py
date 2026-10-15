@@ -19,7 +19,7 @@ LESSONS = [
         "id": 3,
         "title": "第三课：if 条件判断",
         "concept": "if 语句让程序根据不同条件执行不同代码。注意 Python 用缩进来表示代码块！",
-        "hint": 'score = 85\nif score >= 60:\n    print("及格了")\nelse:\n    print("没及格")',
+        "hint": 'score = 75\nif score >= 60:\n    print("及格")\nelse:\n    print("没及格")',
         "task": "定义变量 score = 75，如果 score >= 60 输出及格，否则输出不及格。",
         "expected": "及格",
     },
