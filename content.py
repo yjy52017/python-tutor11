@@ -1,14 +1,12 @@
-# 在 content.py 中找到类似下面这样的一节课数据：
 LESSONS = [
     {
+        "id": 1,
         "title": "第一课：你好，Python！",
-        "content": "print() 函数用来在屏幕上输出内容。试试打印一句问候语吧！",
+        "concept": "print() 函数用来在屏幕上输出内容。试试打印一句问候语吧！",
+        "hint": 'print("你好，Python！")',
         "task": "请使用 print() 输出：你好，Python！",
-        "hint": "格式是 print(\"内容\")，括号里用英文双引号。",
-        "code": "print(\"你好，Python！\")",
-        "answer": "你好，Python！"  # <--- 加上这一行！这就是系统要判断的“标准答案”
+        "expected": "你好，Python！",
     },
-    # ... 其他课程同理，后面课程也要加上 "answer": "期望输出内容"
     {
         "id": 2,
         "title": "第二课：变量与数据类型",
@@ -16,7 +14,6 @@ LESSONS = [
         "hint": 'name = "小明"\nage = 16\nprint(name, age)',
         "task": "定义一个变量 name 赋值为你的名字，再定义一个变量 age 赋值为你的年龄，然后打印它们。",
         "expected": None,
-        "answer": "你好，Python！"  # <--- 加上这一行！这就是系统要判断的“标准答案”
     },
     {
         "id": 3,
@@ -25,7 +22,6 @@ LESSONS = [
         "hint": 'score = 85\nif score >= 60:\n    print("及格了")\nelse:\n    print("没及格")',
         "task": "定义变量 score = 75，如果 score >= 60 输出及格，否则输出不及格。",
         "expected": "及格",
-          "answer": "你好，Python！"  # <--- 加上这一行！这就是系统要判断的“标准答案”
     },
     {
         "id": 4,
@@ -34,7 +30,6 @@ LESSONS = [
         "hint": "for i in range(5):\n    print(i)",
         "task": "使用 for 循环打印数字 1 到 5。",
         "expected": "1\n2\n3\n4\n5",
-         "answer": "你好，Python！"  # <--- 加上这一行！这就是系统要判断的“标准答案”
     },
     {
         "id": 5,
@@ -43,7 +38,6 @@ LESSONS = [
         "hint": 'def greet(name):\n    return "你好，" + name\n\nprint(greet("Python"))',
         "task": "定义一个函数 add(a, b)，返回两个数的和。然后调用 add(3, 5) 并打印结果。",
         "expected": "8",
-          "answer": "你好，Python！"  # <--- 加上这一行！这就是系统要判断的“标准答案”
     },
 ]
 

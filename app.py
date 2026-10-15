@@ -53,34 +53,14 @@ if lesson:
             key=f"code_{lesson['id']}",
         )
 
-            # === 运行代码与判题逻辑（替换掉原来的按钮逻辑） ===
-    if st.button("▶️ 运行代码", key=f"run_{i}"):
-        import io
-        from contextlib import redirect_stdout
-        
-        output_buffer = io.StringIO()
-        try:
-            # 重定向 print 的输出到缓冲区
-            with redirect_stdout(output_buffer):
-                exec(user_code)
-            
-            # 获取实际输出并去除首尾空格
-            actual_output = output_buffer.getvalue().strip()
-            # 获取期望输出并去除首尾空格
-            expected_output = lesson.get("answer", "").strip()
-
-            if actual_output == expected_output:
-                st.success("✅ 太棒了！代码运行成功，完全正确！")
-                st.info(f"**你的输出**：{actual_output}")
-            else:
-                st.error("❌ 运行完成，但输出结果不对哦。")
-                st.warning(f"**期望输出**：`{expected_output}`")
-                st.info(f"**你的输出**：`{actual_output}`")
-                st.caption("💡 提示：请检查输出内容或标点符号是否完全一致。")
-
-        except Exception as e:
-            st.error(f"❌ 代码运行报错：\n{e}")
-            st.caption("💡 提示：请检查括号、引号是否为英文半角，或缩进是否正确。")
+        if st.button("▶️ 运行代码", type="primary"):
+            try:
+                exec(user_code, {})
+                st.success("✅ 代码运行完成！")
+                if lesson["expected"]:
+                    st.write("期望输出：", lesson["expected"])
+            except Exception as e:
+                st.error(f"❌ 运行出错：{e}")
 
     with col2:
         st.subheader("🤖 智能答疑")
