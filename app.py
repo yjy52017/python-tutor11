@@ -5,6 +5,7 @@ from config import OPENAI_API_KEY, OPENAI_BASE_URL, MODEL
 from content import LESSONS, PROJECT_CHALLENGE
 
 st.set_page_config(page_title="Python自学助手", page_icon="🐍", layout="wide")
+
 # --- 自定义 CSS 样式 ---
 st.markdown("""
 <style>
@@ -12,8 +13,8 @@ st.markdown("""
     div.stTextArea textarea,
     div.stCodeBlock,
     pre {
-        font-family: 'Consolas', 'Monaco', monospace; /* 使用等宽字体，方便写代码 */
-        font-size: 18px !important; /* 字体大小调大到 18px */
+        font-family: 'Consolas', 'Monaco', monospace;
+        font-size: 18px !important;
         line-height: 1.6 !important;
     }
 </style>
@@ -53,44 +54,41 @@ if lesson:
             key=f"code_{lesson['id']}",
         )
 
+        # 注意：这里没有多余的空格，完美缩进
         if st.button("▶️ 运行代码", type="primary"):
             import io
             from contextlib import redirect_stdout
             
-            # 创建一个虚拟的输出屏幕
+            # 创建一个“虚拟屏幕”来接收 print 的输出
             output_buffer = io.StringIO()
-            
             try:
-                # 运行学生写的代码，并捕获 print 的输出
+                # 运行学生代码，并将 print 的内容重定向到虚拟屏幕
                 with redirect_stdout(output_buffer):
                     exec(user_code, {})
                 
-                # 获取学生的实际输出（去掉首尾空格和换行符）
+                # 提取实际输出，并去除首尾空格
                 actual_output = output_buffer.getvalue().strip()
-                
-                # 获取你 content.py 里定义的期望输出
+                # 获取 content.py 里的期望答案
                 expected_output = lesson.get("expected")
-                
-                # 1. 显示学生的实际输出
+
+                # 1. 显示学生自己代码的实际输出
                 if actual_output:
                     st.info(f"**你的代码输出：** `{actual_output}`")
                 else:
-                    st.warning("⚠️ 你的代码没有打印出任何内容，请检查 print() 语句。")
+                    st.warning("⚠️ 你的代码运行了，但没有看到任何输出（请检查 print 语句）。")
 
-                # 2. 进行判题
+                # 2. 自动判题（对比实际输出和期望输出）
                 if expected_output is not None:
-                    # 如果期望输出有内容，就进行比对
-                    # 同时去掉换行符的干扰
                     if actual_output == expected_output.strip():
-                        st.success("✅ 太棒了！你的代码运行完全正确！🎉")
+                        st.success("✅ 太棒了！输出结果完全正确！🎉")
                     else:
-                        st.error("❌ 运行结果不对哦。")
+                        st.error("❌ 运行完成，但输出结果不对哦。")
                         st.warning(f"**期望输出：** `{expected_output}`")
-                        st.caption("💡 提示：请仔细检查你的输出内容、空格以及标点符号是否完全一致。")
+                        st.caption("💡 提示：请仔细检查输出内容、空格以及标点符号（请使用英文半角）。")
                         
             except Exception as e:
-                st.error(f"❌ 代码运行报错：{e}")
-                st.caption("💡 提示：请检查括号、引号是否为英文半角，或缩进是否正确。")
+                st.error(f"❌ 代码运行报错啦：\n`{e}`")
+                st.caption("💡 提示：请检查括号、引号是否闭合，缩进是否正确。")
 
     with col2:
         st.subheader("🤖 智能答疑")
@@ -105,7 +103,8 @@ if lesson:
             with st.chat_message("user"):
                 st.write(prompt)
 
-             context = (
+            # 注意：这里完美对齐，没有多余的缩进
+            context = (
                 "你是一位耐心友好、擅长教高中生的Python老师。"
                 f"当前学生正在学习：{lesson['title']}。"
                 f"知识点：{lesson.get('concept', 'Python基础编程')}。"
