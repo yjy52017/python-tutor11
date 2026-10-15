@@ -41,7 +41,7 @@ if lesson:
 
     with col1:
         st.subheader(lesson["title"])
-        st.info(lesson["content"])
+        st.info(lesson["concept"])
         st.markdown("### 📝 任务")
         st.write(lesson["task"])
         with st.expander("💡 看提示"):
