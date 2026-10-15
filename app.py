@@ -1,15 +1,30 @@
 import streamlit as st
 from content import PROJECT_CHALLENGE
 
-st.title("Python 趣味小课堂")
+# 定义基础知识的课程大纲（恢复之前消失的课程）
+BASIC_LESSONS = {
+    "第一课：变量与数据类型": "变量是存储数据的容器。例如 x = 10。Python 的基本数据类型包括：整数(int)、浮点数(float)、字符串(str) 和 布尔值(bool)。",
+    "第二课：运算符与表达式": "Python 支持算术运算符（+、-、*、/）和比较运算符（==、!=、>、<）。表达式是这些运算符的组合。",
+    "第三课：条件判断 (if-elif-else)": "程序可以通过 if-elif-else 语句根据条件执行不同的代码块。注意 Python 使用缩进来表示代码的从属关系。",
+    "第四课：循环 (for & while)": "for 循环用于遍历序列（如列表），while 循环在条件为真时不断执行。它们是处理重复任务的利器。",
+}
 
-# 侧边栏导航
+st.title("滨中Python 趣味小课堂")
+
+# 侧边栏导航 (使用下拉菜单以保证兼容所有环境)
 menu = ["📖 基础知识", "🎮 综合项目"]
-selected = st.sidebar.radio("请选择菜单", menu)
+selected = st.sidebar.selectbox("请选择菜单", menu)
 
 if selected == "📖 基础知识":
     st.header("欢迎来到基础学习区")
-    st.write("在这里学习 Python 的基础语法和逻辑判断！")
+    st.write("在这里学习 Python 的基础语法和逻辑判断！\n")
+    st.divider()
+
+    # 动态生成课程列表
+    for title, content in BASIC_LESSONS.items():
+        with st.expander(f"📘 {title}", expanded=False):
+            st.write(content)
+            st.divider()
 
 elif selected == "🎮 综合项目":
     st.subheader(PROJECT_CHALLENGE["title"])
