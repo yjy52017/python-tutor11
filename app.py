@@ -5,6 +5,19 @@ from config import OPENAI_API_KEY, OPENAI_BASE_URL, MODEL
 from content import LESSONS, PROJECT_CHALLENGE
 
 st.set_page_config(page_title="Python自学助手", page_icon="🐍", layout="wide")
+# --- 自定义 CSS 样式 ---
+st.markdown("""
+<style>
+    /* 放大代码编辑区和文本区的字体 */
+    div.stTextArea textarea,
+    div.stCodeBlock,
+    pre {
+        font-family: 'Consolas', 'Monaco', monospace; /* 使用等宽字体，方便写代码 */
+        font-size: 18px !important; /* 字体大小调大到 18px */
+        line-height: 1.6 !important;
+    }
+</style>
+""", unsafe_allow_html=True)
 
 st.title("🐍 樟树市滨江中学高一学生自学Python编程AI助手")
 st.markdown("---")
@@ -40,14 +53,34 @@ if lesson:
             key=f"code_{lesson['id']}",
         )
 
-        if st.button("▶️ 运行代码", type="primary"):
-            try:
-                exec(user_code, {})
-                st.success("✅ 代码运行完成！")
-                if lesson["expected"]:
-                    st.write("期望输出：", lesson["expected"])
-            except Exception as e:
-                st.error(f"❌ 运行出错：{e}")
+            # === 运行代码与判题逻辑（替换掉原来的按钮逻辑） ===
+    if st.button("▶️ 运行代码", key=f"run_{i}"):
+        import io
+        from contextlib import redirect_stdout
+        
+        output_buffer = io.StringIO()
+        try:
+            # 重定向 print 的输出到缓冲区
+            with redirect_stdout(output_buffer):
+                exec(user_code)
+            
+            # 获取实际输出并去除首尾空格
+            actual_output = output_buffer.getvalue().strip()
+            # 获取期望输出并去除首尾空格
+            expected_output = lesson.get("answer", "").strip()
+
+            if actual_output == expected_output:
+                st.success("✅ 太棒了！代码运行成功，完全正确！")
+                st.info(f"**你的输出**：{actual_output}")
+            else:
+                st.error("❌ 运行完成，但输出结果不对哦。")
+                st.warning(f"**期望输出**：`{expected_output}`")
+                st.info(f"**你的输出**：`{actual_output}`")
+                st.caption("💡 提示：请检查输出内容或标点符号是否完全一致。")
+
+        except Exception as e:
+            st.error(f"❌ 代码运行报错：\n{e}")
+            st.caption("💡 提示：请检查括号、引号是否为英文半角，或缩进是否正确。")
 
     with col2:
         st.subheader("🤖 智能答疑")
