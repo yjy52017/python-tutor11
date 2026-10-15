@@ -1,5 +1,5 @@
 import streamlit as st
-import randowm
+import random
 import os
 from config import OPENAI_API_KEY, OPENAI_BASE_URL, MODEL
 from content import LESSONS, PROJECT_CHALLENGE
