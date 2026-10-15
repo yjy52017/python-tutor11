@@ -55,7 +55,7 @@ elif guess > st.session_state.secret:
     st.session_state.message = f"{guess} 大了！请继续猜。"
 else:
     st.session_state.message = f"恭喜你！你用了 {st.session_state.count} 次猜中了！🎉"
-    st.session_state.show_secret = True  # 新增：猜中后显示答案
+    st.session_state.show_secret = True
     st.session_state.secret = random.randint(1, 100)
     st.session_state.count = 0""",
 }
