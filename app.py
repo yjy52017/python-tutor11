@@ -40,7 +40,7 @@ if lesson:
 
     with col1:
         st.subheader(lesson["title"])
-        st.info(lesson["concept"])
+        st.info(lesson["content"])
         st.markdown("### 📝 任务")
         st.write(lesson["task"])
         with st.expander("💡 看提示"):
@@ -48,19 +48,49 @@ if lesson:
 
         user_code = st.text_area(
             "✏️ 在这里写代码",
-            value=lesson["hint"],
+            value="",
             height=200,
             key=f"code_{lesson['id']}",
         )
 
-        if st.button("▶️ 运行代码", type="primary"):
+            if st.button("▶️ 运行代码", type="primary"):
+            import io
+            from contextlib import redirect_stdout
+            
+            # 创建一个虚拟的输出屏幕
+            output_buffer = io.StringIO()
+            
             try:
-                exec(user_code, {})
-                st.success("✅ 代码运行完成！")
-                if lesson["expected"]:
-                    st.write("期望输出：", lesson["expected"])
+                # 运行学生写的代码，并捕获 print 的输出
+                with redirect_stdout(output_buffer):
+                    exec(user_code, {})
+                
+                # 获取学生的实际输出（去掉首尾空格和换行符）
+                actual_output = output_buffer.getvalue().strip()
+                
+                # 获取你 content.py 里定义的期望输出
+                expected_output = lesson.get("expected")
+                
+                # 1. 显示学生的实际输出
+                if actual_output:
+                    st.info(f"**你的代码输出：** `{actual_output}`")
+                else:
+                    st.warning("⚠️ 你的代码没有打印出任何内容，请检查 print() 语句。")
+
+                # 2. 进行判题
+                if expected_output is not None:
+                    # 如果期望输出有内容，就进行比对
+                    # 同时去掉换行符的干扰
+                    if actual_output == expected_output.strip():
+                        st.success("✅ 太棒了！你的代码运行完全正确！🎉")
+                    else:
+                        st.error("❌ 运行结果不对哦。")
+                        st.warning(f"**期望输出：** `{expected_output}`")
+                        st.caption("💡 提示：请仔细检查你的输出内容、空格以及标点符号是否完全一致。")
+                        
             except Exception as e:
-                st.error(f"❌ 运行出错：{e}")
+                st.error(f"❌ 代码运行报错：{e}")
+                st.caption("💡 提示：请检查括号、引号是否为英文半角，或缩进是否正确。")
 
     with col2:
         st.subheader("🤖 智能答疑")
@@ -75,10 +105,10 @@ if lesson:
             with st.chat_message("user"):
                 st.write(prompt)
 
-            context = (
+             context = (
                 "你是一位耐心友好、擅长教高中生的Python老师。"
                 f"当前学生正在学习：{lesson['title']}。"
-                f"知识点：{lesson['concept']}。"
+                f"知识点：{lesson.get('concept', 'Python基础编程')}。"
                 f"任务：{lesson['task']}。"
                 f"学生代码：{user_code}。"
                 "请用简单易懂的语言回答，必要时给出代码示例。"
