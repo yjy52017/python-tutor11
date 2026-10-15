@@ -91,82 +91,59 @@ elif selected == "🎮 综合项目":
     st.subheader(PROJECT_CHALLENGE["title"])
     st.write(PROJECT_CHALLENGE["description"])
 
-    # ---- 查看提示 ----
-    if st.button("💡 查看提示"):
-        code_text = PROJECT_CHALLENGE["reference_code"]
-        with st.expander("👇 点击复制下方的参考代码：", expanded=True):
-            st.code(code_text, language="python")
-
-    # ---- 智能答疑 ----
-    if st.button("🤖 智能答疑"):
-        st.session_state.show_project_chat = True
-
-    if st.session_state.get("show_project_chat", False):
-        st.markdown("---")
-        st.subheader("🤖 关于本项目的智能答疑")
-        st.write("你可以问我：这段代码是什么意思？为什么要用 session_state？怎么修改难度？")
-
-        project_question = st.text_input("输入你的问题：", key="project_q_input")
-        if project_question and st.button("发送", key="project_send_btn"):
-            try:
-                from openai import OpenAI
-                client = OpenAI(
-                    base_url=st.secrets["OPENAI_BASE_URL"],
-                    api_key=st.secrets["OPENAI_API_KEY"],
-                )
-                context = f"""你是一个耐心的编程老师。学生正在做这个综合项目：
-题目：{PROJECT_CHALLENGE['title']}
-要求：{PROJECT_CHALLENGE['description']}
-参考代码：{PROJECT_CHALLENGE['reference_code']}
-学生的问题是：{project_question}
-请用简单易懂的语言回答，必要时给出代码示例。"""
-                resp = client.chat.completions.create(
-                    model=st.secrets.get("OPENAI_MODEL", "glm-4-flash"),
-                    messages=[{"role": "user", "content": context}],
-                )
-                st.success(resp.choices[0].message.content)
-            except Exception as e:
-                st.error(f"AI 回复失败：{e}")
-
-    st.markdown("---")
-
-    # ---- 游戏初始化（增加 show_secret 变量） ----
-    import random
+    # 1. 初始化游戏状态（只在第一次打开或重置时执行）
     if 'secret' not in st.session_state:
         st.session_state.secret = random.randint(1, 100)
+    if 'count' not in st.session_state:
         st.session_state.count = 0
-        st.session_state.message = "游戏开始了！请猜一个 1-100 的数字。"
-        st.session_state.show_secret = False  # 新增：默认隐藏答案
+    if 'message' not in st.session_state:
+        st.session_state.message = ""
+    if 'is_over' not in st.session_state:
+        st.session_state.is_over = False
 
-    guess = st.slider("请调整滑块选择一个数字：", 1, 100, 50)
-    st.write(f"**你当前选择的数字是：{guess}**")
+    # 2. 显示提示和结果
+    if st.session_state.message:
+        st.success(st.session_state.message)
+    
+    st.text_input("请输入你猜的数字（1-100）", key="guess_input")
 
-    user_code = st.text_area(
-        "✏️ 在这里写你的项目代码（逻辑判断部分）：",
-        height=300,
-        key="project_code_area",
-    )
-
-    if st.button("▶️ 运行/猜数字", type="primary"):
+    # 3. 定义猜数字的逻辑函数（绑定给按钮触发）
+    def guess_number():
         try:
-            safe_globals = {"__builtins__": __builtins__, "st": st, "random": random, "guess": guess}
-            exec(user_code, safe_globals)
-        except Exception as e:
-            st.error(f"❌ 代码运行出错：{e}")
+            user_guess = int(st.session_state.guess_input)
+            st.session_state.count += 1
+            
+            if st.session_state.is_over:
+                st.session_state.message = "游戏已结束，请重置后再玩。"
+            elif user_guess == st.session_state.secret:
+                st.session_state.message = f"🎉 恭喜你！你用了 {st.session_state.count} 次猜中了！"
+                st.session_state.is_over = True
+            elif user_guess < st.session_state.secret:
+                st.session_state.message = f"你猜的 {user_guess} 小了！请继续猜。"
+            else:
+                st.session_state.message = f"你猜的 {user_guess} 大了！请继续猜。"
+        except ValueError:
+            st.session_state.message = "请输入一个有效的整数哦！"
+        # 猜完清空输入框，准备下一次
+        st.session_state.guess_input = ""
 
-    st.info(st.session_state.message)
-
-    # ---- 新增：猜中后展示隐藏的答案对比模块 ----
-    if st.session_state.get("show_secret", False):
-        st.markdown("---")
-        st.success(f"🎉 **谜底揭晓！** 电脑随机生成的数字正是 **{st.session_state.secret}**！")
-        st.metric(label="你猜对的数字", value=guess)
-        st.metric(label="电脑生成的数字", value=st.session_state.secret)
-        st.balloons()  # 撒花庆祝！
-
-    if st.button("🔄 重置游戏"):
+    # 4. 定义重置游戏的逻辑
+    def restart_game():
         st.session_state.secret = random.randint(1, 100)
         st.session_state.count = 0
-        st.session_state.message = "新游戏开始！请猜一个 1-100 的数字。"
-        st.session_state.show_secret = False  # 重置时也要隐藏答案
-        st.rerun()
+        st.session_state.message = ""
+        st.session_state.is_over = False
+        st.session_state.guess_input = ""
+
+    # 5. 放置按钮
+    col1, col2 = st.columns([1, 4])
+    with col1:
+        st.button("🔄 重置游戏", on_click=restart_game)
+    with col2:
+        st.button("▶️ 猜数字", on_click=guess_number, type="primary")
+
+    # 6. 游戏结束时揭晓谜底
+    if st.session_state.is_over:
+        st.info(f"🎉 谜底揭晓！电脑随机生成的数字正是 **{st.session_state.secret}**！")
+        st.metric(label="你猜对的数字", value=st.session_state.guess_input if st.session_state.guess_input else "已猜中")
+        st.metric(label="电脑生成的数字", value=st.session_state.secret)
