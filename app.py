@@ -91,51 +91,121 @@ if lesson:
 elif selected == "🎮 综合项目":
     st.subheader(PROJECT_CHALLENGE["title"])
     st.write(PROJECT_CHALLENGE["description"])
-
-    # 1. 系统初始化一个目标数字
+    
+    # --- 初始化游戏状态 ---
     if 'target' not in st.session_state:
         st.session_state.target = random.randint(1, 100)
+    if 'game_won' not in st.session_state:
+        st.session_state.game_won = False
 
-    # 2. 左侧交互区：猜数字
-    col1, col2 = st.columns([1, 1])
+    target = st.session_state.target
     
-    with col1:
-        st.markdown("### 🎮 猜数字测试")
-        st.info(f"系统生成的目标数字是：**{st.session_state.target}**")
-        
-        guess = st.slider("滑动选择一个 1-100 的数字来测试", 1, 100, 50)
-        st.write(f"你选择测试的数字是：`{guess}`")
+    # --- 页面主体分为左右两栏 ---
+    col1, col2 = st.columns([1, 1])
 
-    # 3. 右侧代码区：编写逻辑
+    # === 左侧：游戏交互区 ===
+    with col1:
+        st.markdown("### 🎮 猜数字测试区")
+        
+        # 隐藏谜底，只有猜对了才显示
+        if st.session_state.game_won:
+            st.success(f"🎉 恭喜你猜对了！目标数字就是 **{target}**！")
+        else:
+            st.info("❓ 系统生成的目标数字是： **???**")
+
+        # 学生拖动滑块选择数字
+        guess = st.slider("滑动选择一个 1-100 的数字来测试", 1, 100, 50, key="slider_guess")
+        st.write(f"你当前选择测试的数字是：`{guess}`")
+        
+        # 重置游戏按钮
+        if st.button("🔄 重置并生成新的目标数字"):
+            st.session_state.target = random.randint(1, 100)
+            st.session_state.game_won = False
+            st.session_state.code_template_generated = False
+            st.rerun()
+
+    # === 右侧：代码编写与 AI 辅助区 ===
     with col2:
         st.markdown("### 📝 编写逻辑判断代码")
+        st.caption("在下方编写 `if/elif/else` 代码，判断 `guess` 和 `target` 的关系。")
         
-        # 预设代码框架
-        template = (
-            "# 目标数字是 target = " + str(st.session_state.target) + "\n"
-            "# 测试数字是 guess = " + str(guess) + "\n"
-            "# 请在这里编写你的 if/else 判断逻辑：\n\n"
-            "# if guess < target:\n"
-            "#     ...\n"
-        )
-
-        code_input = st.text_area(
-            "在此处编写代码",
-            value=template,
+        # 1. 动态代码提示（点击后才显示完整模板）
+        if st.button("💡 我需要代码提示", key="show_template_btn"):
+            st.session_state.code_template_generated = True
+            
+        if 'code_template_generated' in st.session_state and st.session_state.code_template_generated:
+            st.markdown("**参考代码框架**：")
+            template = (
+f"""if guess < target:
+    print(f"太小了，你猜的 {{guess}} 比目标数字小")
+elif guess > target:
+    print(f"太大了，你猜的 {{guess}} 比目标数字大")
+else:
+    print(f"恭喜你，猜对了！")
+"""
+            )
+            st.code(template, language="python")
+        
+        # 2. 代码输入框
+        user_code = st.text_area(
+            "在此处编写你的 Python 代码",
             height=250,
-            key="code_input"
+            key="code_input_area"
         )
 
-        if st.button("▶️ 运行我的代码"):
+        # 3. 运行代码逻辑
+        if st.button("▶️ 运行我的代码", type="primary"):
             try:
-                target = st.session_state.target
-                # 执行学生写的代码
-                exec(code_input, {"target": target, "guess": guess, "print": st.write})
+                # 捕获标准输出，这样 print 的内容不会出现在终端，而是显示在页面上
+                import io
+                from contextlib import redirect_stdout
+                
+                output_buffer = io.StringIO()
+                
+                with redirect_stdout(output_buffer):
+                    # 将学生的代码放在安全字典中执行，只暴露 guess 和 target
+                    exec(user_code, {"guess": guess, "target": target})
+                
+                # 获取执行后的 print 输出
+                execution_output = output_buffer.getvalue()
+                
+                if execution_output:
+                    st.write(f"**代码运行结果：**")
+                    st.info(execution_output)
+                    
+                    # 判断是否猜对，改变游戏状态
+                    if "猜对了" in execution_output:
+                        st.session_state.game_won = True
+                        st.rerun()
+                else:
+                    st.warning("⚠️ 代码运行了，但没有输出任何结果，请检查你的 print 语句。")
+                    
             except Exception as e:
-                st.error(f"❌ 代码运行出错：{e}")
+                st.error(f"❌ 代码运行出错啦：{str(e)}")
+                st.warning("💡 遇到报错没关系，把错误信息复制到右侧的 AI 智能答疑中，让 AI 帮你看看！")
 
-    # 4. 重新生成题目的按钮
+    # --- 底部 AI 智能答疑模块 ---
     st.markdown("---")
-    if st.button("🔄 重置并生成新的目标数字"):
-        st.session_state.target = random.randint(1, 100)
-        st.rerun()
+    st.subheader("🤖 AI 智能答疑")
+    st.caption("如果代码报错，或者不知道逻辑怎么写，可以直接在下方输入框问 AI。")
+    
+    ai_question = st.text_input("向 AI 提问...", placeholder="例如：我的 if 语句一直报错怎么办？", key="ai_q_project")
+    if ai_question:
+        with st.spinner("AI 正在思考中..."):
+            try:
+                # 调用你之前写好的 OpenAI API 进行回答
+                import openai
+                openai.api_key = os.getenv("OPENAI_API_KEY")
+                openai.api_base = os.getenv("OPENAI_BASE_URL")
+                
+                response = openai.ChatCompletion.create(
+                    model=os.getenv("MODEL"),
+                    messages=[
+                        {"role": "system", "content": "你是一位耐心、友好的 Python 编程老师。学生正在写猜数字游戏的 if/else 逻辑。如果学生代码报错，不要直接给完整答案，要引导他们思考。"},
+                        {"role": "user", "content": f"学生提问：{ai_question}"}
+                    ]
+                )
+                ai_reply = response["choices"][0]["message"]["content"]
+                st.markdown(f"**AI 老师回答：**\n{ai_reply}")
+            except Exception as e:
+                st.error(f"AI 服务暂时无法连接：{str(e)}")
