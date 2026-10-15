@@ -90,13 +90,45 @@ if lesson:
 elif selected == "🎮 综合项目":
     st.subheader(PROJECT_CHALLENGE["title"])
     st.write(PROJECT_CHALLENGE["description"])
-    with st.expander("📖 参考代码（做完再看哦）"):
-        st.code(PROJECT_CHALLENGE["reference_code"], language="python")
+    
+    # 1. 全局初始化游戏状态（确保游戏始终能运行）
+    import random
+    if 'secret' not in st.session_state:
+        st.session_state.secret = random.randint(1, 100)
+        st.session_state.count = 0
+        st.session_state.message = "游戏开始了！请猜一个 1-100 的数字。"
 
-    user_code = st.text_area("✏️ 在这里写你的项目代码", height=300)
-    if st.button("▶️ 运行项目代码", type="primary"):
+    # 2. 提供滑动条（学生无需再写这行，直接使用即可）
+    guess = st.slider("请调整滑块选择一个数字：", 1, 100, 50)
+    st.markdown("---")
+    st.write(f"**你当前选择的数字是：{guess}**")
+    
+    # 3. 学生的代码区域
+    user_code = st.text_area(
+        "✏️ 在这里写你的项目代码（逻辑判断部分）：", 
+        height=300,
+        key="project_code_area"
+    )
+    
+    # 4. 运行逻辑（把你的代码和学生的代码融合）
+    if st.button("▶️ 运行/猜数字", type="primary"):
         try:
-            exec(user_code, {})
-            st.success("✅ 代码运行完成！")
+            # 准备一个安全的执行环境，并自动引入必要的模块
+            safe_globals = {"__builtins__": __builtins__, "st": st, "random": random, "guess": guess}
+            # 执行学生写的代码
+            exec(user_code, safe_globals)
+            # 如果学生没有改变 message，则显示默认成功提示
+            if st.session_state.message == "游戏开始了！请猜一个 1-100 的数字。":
+                st.session_state.message = "请点击按钮猜数字，或者修改你的代码！"
         except Exception as e:
-            st.error(f"❌ 运行出错：{e}")
+            st.error(f"❌ 代码运行出错：{e}")
+
+    # 5. 显示反馈结果
+    st.info(st.session_state.message)
+    
+    # 6. 重置游戏按钮
+    if st.button("🔄 重置游戏（重新生成随机数）"):
+        st.session_state.secret = random.randint(1, 100)
+        st.session_state.count = 0
+        st.session_state.message = "新游戏开始！请猜一个 1-100 的数字。"
+        st.rerun()
