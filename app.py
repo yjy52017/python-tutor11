@@ -53,7 +53,7 @@ if lesson:
             key=f"code_{lesson['id']}",
         )
 
-            if st.button("▶️ 运行代码", type="primary"):
+        if st.button("▶️ 运行代码", type="primary"):
             import io
             from contextlib import redirect_stdout
             
