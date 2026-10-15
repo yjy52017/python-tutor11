@@ -42,26 +42,37 @@ LESSONS = [
 ]
 
 PROJECT_CHALLENGE = {
-    "title": "小项目：猜数字游戏",
-    "description": """电脑随机生成一个 1~100 的数字，玩家来猜。每次猜完告诉玩家大了或小了，直到猜中为止。
+    "title": "小项目：猜数字游戏（网页版）",
+    "description": """电脑随机生成一个 1~100 的数字，玩家来猜。
+    
+注意：因为是在网页上运行，我们不能用 input() 输入。
+请尝试修改代码，使用 Streamlit 的滑块（st.slider）来获取用户输入的数字，
+并在点击按钮后判断大小。""",
+    "reference_code": """import streamlit as st
+import random
 
-提示：
-- 用 import random 和 random.randint(1, 100) 生成随机数
-- 用 while 循环让玩家反复猜
-- 用 if/elif/else 判断大小""",
-    "reference_code": """import random
+# 1. 初始化游戏数据
+if 'secret' not in st.session_state:
+    st.session_state.secret = random.randint(1, 100)
+    st.session_state.count = 0
+    st.session_state.message = "游戏开始了！请猜一个 1-100 的数字。"
 
-number = random.randint(1, 100)
-count = 0
+# 2. 使用网页滑块代替 input()
+guess = st.slider("猜一个1-100的数字：", 1, 100, 50)
 
-while True:
-    guess = int(input("猜一个1-100的数字："))
-    count += 1
-    if guess < number:
-        print("小了！")
-    elif guess > number:
-        print("大了！")
+# 3. 点击按钮进行判断
+if st.button("我猜这个数字！"):
+    st.session_state.count += 1
+    if guess < st.session_state.secret:
+        st.session_state.message = f"{guess} 小了！请继续猜。"
+    elif guess > st.session_state.secret:
+        st.session_state.message = f"{guess} 大了！请继续猜。"
     else:
-        print(f"恭喜！你用了{count}次猜中了！")
-        break""",
+        st.session_state.message = f"恭喜你！你用了 {st.session_state.count} 次猜中了！🎉"
+        # 猜中后重新生成一个数字
+        st.session_state.secret = random.randint(1, 100)
+        st.session_state.count = 0
+
+# 4. 在屏幕上显示当前的提示
+st.write(st.session_state.message)""",
 }
