@@ -1,11 +1,12 @@
 import streamlit as st
+import randowm
 import os
 from config import OPENAI_API_KEY, OPENAI_BASE_URL, MODEL
 from content import LESSONS, PROJECT_CHALLENGE
 
 st.set_page_config(page_title="Python自学助手", page_icon="🐍", layout="wide")
 
-st.title("🐍 樟树市滨江中学高一Python自学助手")
+st.title("🐍 樟树市滨江中学高一学生自学Python编程AI助手")
 st.markdown("---")
 
 st.sidebar.header("📚 课程目录")
