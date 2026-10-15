@@ -91,8 +91,9 @@ if lesson:
 elif selected == "🎮 综合项目":
     st.subheader(PROJECT_CHALLENGE["title"])
     st.write(PROJECT_CHALLENGE["description"])
+    st.info("💡 提示：你可以选择使用【滑块】或直接【输入数字】来猜，点击下方按钮即可开始。")
 
-    # 1. 初始化游戏状态（只在第一次打开或重置时执行）
+    # 1. 初始化游戏状态
     if 'secret' not in st.session_state:
         st.session_state.secret = random.randint(1, 100)
     if 'count' not in st.session_state:
@@ -102,49 +103,70 @@ elif selected == "🎮 综合项目":
     if 'is_over' not in st.session_state:
         st.session_state.is_over = False
 
-    # 2. 显示提示和结果
+    # 2. 显示游戏结果或反馈
     if st.session_state.message:
-        st.success(st.session_state.message)
-    
-    st.text_input("请输入你猜的数字（1-100）", key="guess_input")
+        if "恭喜" in st.session_state.message:
+            st.success(st.session_state.message)
+            st.metric(label="🎯 你最后猜对的数字", value=st.session_state.count)
+            st.metric(label="💻 电脑生成的最终数字", value=st.session_state.secret)
+        else:
+            st.warning(st.session_state.message)
 
-    # 3. 定义猜数字的逻辑函数（绑定给按钮触发）
-    def guess_number():
-        try:
-            user_guess = int(st.session_state.guess_input)
-            st.session_state.count += 1
+    # 3. 提供两种交互方式（滑块和文本输入）
+    if not st.session_state.is_over:
+        col1, col2 = st.columns([1, 1])
+        
+        with col1:
+            st.markdown("**🎚️ 方式一：使用滑块**")
+            # 这里就是你要的滑动模块！
+            slider_val = st.slider("滑动选择 1-100 的数字", 1, 100, 50, key="slider_guess")
             
-            if st.session_state.is_over:
-                st.session_state.message = "游戏已结束，请重置后再玩。"
-            elif user_guess == st.session_state.secret:
-                st.session_state.message = f"🎉 恭喜你！你用了 {st.session_state.count} 次猜中了！"
-                st.session_state.is_over = True
-            elif user_guess < st.session_state.secret:
-                st.session_state.message = f"你猜的 {user_guess} 小了！请继续猜。"
-            else:
-                st.session_state.message = f"你猜的 {user_guess} 大了！请继续猜。"
-        except ValueError:
-            st.session_state.message = "请输入一个有效的整数哦！"
-        # 猜完清空输入框，准备下一次
-        st.session_state.guess_input = ""
+        with col2:
+            st.markdown("**⌨️ 方式二：直接输入数字**")
+            # 这里就是你要的写程序/输入模块！
+            text_input_val = st.text_input("请输入你猜的数字 (1-100)", key="text_guess")
 
-    # 4. 定义重置游戏的逻辑
-    def restart_game():
-        st.session_state.secret = random.randint(1, 100)
-        st.session_state.count = 0
-        st.session_state.message = ""
-        st.session_state.is_over = False
-        st.session_state.guess_input = ""
-
-    # 5. 放置按钮
-    col1, col2 = st.columns([1, 4])
-    with col1:
-        st.button("🔄 重置游戏", on_click=restart_game)
-    with col2:
-        st.button("▶️ 猜数字", on_click=guess_number, type="primary")
-
-    # 6. 游戏结束时揭晓谜底
-    if st.session_state.is_over:
-        st.info(f"🎉 谜底揭晓！电脑随机生成的数字正是 **{st.session_state.secret}**！")
-        st.metric(label="你猜对的数字", value=st.session_state.guess_input if st.session_state.guess_input else "已猜中")
-        st.metric(label="电脑生成的数字", value=st.session_state.secret)
+        # 4. 放置操作按钮
+        btn_col1, btn_col2, btn_col3 = st.columns([1, 1, 3])
+        
+        with btn_col1:
+            if st.button("🕵️ 用滑块猜", type="primary"):
+                try:
+                    num = int(slider_val)
+                    st.session_state.count += 1
+                    if num == st.session_state.secret:
+                        st.session_state.message = f"🎉 恭喜你！你用了 {st.session_state.count} 次猜中了！🐎"
+                        st.session_state.is_over = True
+                    elif num < st.session_state.secret:
+                        st.session_state.message = "猜小了，再大一点！⬆️"
+                    else:
+                        st.session_state.message = "猜大了，再小一点！⬇️"
+                    st.rerun()
+                except:
+                    st.session_state.message = "⚠️ 请尝试拖动滑块！"
+                    st.rerun()
+                    
+        with btn_col2:
+            if st.button("⌨️ 用输入猜", type="primary"):
+                try:
+                    num = int(text_input_val)
+                    st.session_state.count += 1
+                    if num == st.session_state.secret:
+                        st.session_state.message = f"🎉 恭喜你！你用了 {st.session_state.count} 次猜中了！🐎"
+                        st.session_state.is_over = True
+                    elif num < st.session_state.secret:
+                        st.session_state.message = "猜小了，再大一点！⬆️"
+                    else:
+                        st.session_state.message = "猜大了，再小一点！⬇️"
+                    st.rerun()
+                except ValueError:
+                    st.session_state.message = "⚠️ 请在上方输入合法的整数！"
+                    st.rerun()
+                
+        with btn_col3:
+            if st.button("🔄 重置游戏"):
+                st.session_state.secret = random.randint(1, 100)
+                st.session_state.count = 0
+                st.session_state.message = ""
+                st.session_state.is_over = False
+                st.rerun()
