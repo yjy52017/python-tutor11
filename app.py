@@ -238,25 +238,52 @@ else:
     # --- 底部 AI 智能答疑模块 ---
     st.markdown("---")
     st.subheader("🤖 AI 智能答疑")
-    st.caption("如果代码报错，或者不知道逻辑怎么写，可以直接在下方输入框问 AI。")
-    
-    ai_question = st.text_input("向 AI 提问...", placeholder="例如：我的 if 语句一直报错怎么办？", key="ai_q_project")
-    if ai_question:
-        with st.spinner("AI 正在思考中..."):
-            try:
-                # 调用你之前写好的 OpenAI API 进行回答
-                import openai
-                openai.api_key = os.getenv("OPENAI_API_KEY")
-                openai.api_base = os.getenv("OPENAI_BASE_URL")
-                
-                response = openai.ChatCompletion.create(
-                    model=os.getenv("MODEL"),
-                    messages=[
-                        {"role": "system", "content": "你是一位耐心、友好的 Python 编程老师。学生正在写猜数字游戏的 if/else 逻辑。如果学生代码报错，不要直接给完整答案，要引导他们思考。"},
-                        {"role": "user", "content": f"学生提问：{ai_question}"}
-                    ]
-                )
-                ai_reply = response["choices"][0]["message"]["content"]
-                st.markdown(f"**AI 老师回答：**\n{ai_reply}")
-            except Exception as e:
-                st.error(f"AI 服务暂时无法连接：{str(e)}")
+    st.caption("遇到不懂的地方？直接问我！")
+
+    # 初始化历史记录
+    if "chat_history_project" not in st.session_state:
+        st.session_state.chat_history_project = []
+
+    # 显示历史聊天记录
+    for msg in st.session_state.chat_history_project:
+        with st.chat_message(msg["role"]):
+            st.write(msg["content"])
+
+    # 聊天输入框
+    if prompt := st.chat_input("向 AI 提问...", key="chat_input_project"):
+        # 添加用户提问到历史记录
+        st.session_state.chat_history_project.append({"role": "user", "content": prompt})
+        with st.chat_message("user"):
+            st.write(prompt)
+
+        # 获取当前学生的代码内容
+        current_student_code = st.session_state.get("code_input_area", "")
+
+        # 构建 AI 上下文提示词
+        context = (
+            "你是一位耐心、友好的 Python 编程老师。学生正在进行‘猜数字’综合项目的练习，"
+            "当前正在编写 if/elif/else 逻辑代码。"
+            f"学生当前的代码是：```python\n{current_student_code}\n```
+"
+            "如果学生代码报错或逻辑不通，请给出引导性建议，尽量不要直接给出完整答案，鼓励学生自己思考。"
+        )
+
+        # 调用新版 openai 库
+        try:
+            from openai import OpenAI
+            client = OpenAI(api_key=OPENAI_API_KEY, base_url=OPENAI_BASE_URL)
+            response = client.chat.completions.create(
+                model=MODEL,
+                messages=[
+                    {"role": "system", "content": context},
+                    {"role": "user", "content": prompt},
+                ],
+            )
+            reply = response.choices[0].message.content
+        except Exception as e:
+            reply = f"⚠️ AI 服务暂时不可用：{e}"
+
+        # 添加 AI 回复到历史记录
+        st.session_state.chat_history_project.append({"role": "assistant", "content": reply})
+        # 重新运行页面以显示新的回复
+        st.rerun()
