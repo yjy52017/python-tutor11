@@ -4,7 +4,7 @@ import os
 from config import OPENAI_API_KEY, OPENAI_BASE_URL, MODEL
 from content import LESSONS, PROJECT_CHALLENGE
 
-st.set_page_config(page_title="Python自学助手", page_icon="🐍", layout="wide")
+st.set_page_config(page_title="Python自学助手", page_icon="logo.png", layout="wide")
 
 # --- 自定义 CSS 样式 ---
 st.markdown("""
@@ -20,9 +20,15 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-st.title("🐍 樟树市滨江中学高一学生自学Python编程AI助手")
+# 页面头部布局：左侧Logo + 右侧标题
+col_logo, col_title = st.columns([1, 10])
+with col_logo:
+    st.image("logo", width=75) # 在这里显示学校Logo，宽度为75像素
+with col_title:
+    st.title("高一学生自学Python编程AI助手")
 st.markdown("---")
 
+st.sidebar.image("logo.png", width=120) # 侧边栏也显示学校Logo
 st.sidebar.header("📚 课程目录")
 selected = st.sidebar.radio("选择课程", [l["title"] for l in LESSONS] + ["🎮 综合项目"])
 
