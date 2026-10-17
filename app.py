@@ -4,32 +4,35 @@ import os
 from config import OPENAI_API_KEY, OPENAI_BASE_URL, MODEL
 from content import LESSONS, PROJECT_CHALLENGE
 
-st.set_page_config(page_title="Python自学助手", page_icon="logo.png", layout="wide")
+# --- 图片路径安全获取逻辑 ---
+# 获取当前 app.py 所在的目录，确保云端和本地都能准确找到图片
+current_dir = os.path.dirname(os.path.abspath(__file__))
+logo_path = os.path.join(current_dir, "logo.png")
+icon_path = os.path.join(current_dir, "logo.png") if os.path.exists(os.path.join(current_dir, "logo.png")) else "🐍"
 
-# --- 自定义 CSS 样式 ---
-st.markdown("""
-<style>
-    /* 放大代码编辑区和文本区的字体 */
-    div.stTextArea textarea,
-    div.stCodeBlock,
-    pre {
-        font-family: 'Consolas', 'Monaco', monospace;
-        font-size: 18px !important;
-        line-height: 1.6 !important;
-    }
-</style>
-""", unsafe_allow_html=True)
+# --- 页面基础配置 ---
+st.set_page_config(
+    page_title="樟树市滨江中学Python自学助手",
+    page_icon=icon_path,  # 浏览器标签页的小图标，如果没有图片则自动回退到蛇
+    layout="wide"
+)
 
 # 页面头部布局：左侧Logo + 右侧标题
 col_logo, col_title = st.columns([1, 10])
 with col_logo:
-    st.image("logo", width=75) # 在这里显示学校Logo，宽度为75像素
+    # 安全判断：如果云端成功找到图片就显示，找不到则不报错
+    if os.path.exists(logo_path):
+        st.image(logo_path, width=75) 
 with col_title:
-    st.title("高一学生自学Python编程AI助手")
+    st.title("樟树市滨江中学高一学生自学Python编程AI助手")
 st.markdown("---")
 
-st.sidebar.image("logo.png", width=120) # 侧边栏也显示学校Logo
-st.sidebar.header("📚 课程目录")
+# 侧边栏 Logo
+with st.sidebar:
+    if os.path.exists(logo_path):
+        st.image(logo_path, width=120)
+    st.header("📚 课程目录")
+
 selected = st.sidebar.radio("选择课程", [l["title"] for l in LESSONS] + ["🎮 综合项目"])
 
 if "chat_history" not in st.session_state:
