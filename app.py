@@ -12,7 +12,7 @@ icon_path = os.path.join(current_dir, "logo.png") if os.path.exists(os.path.join
 
 # --- 页面基础配置 ---
 st.set_page_config(
-    page_title="樟树市滨江中学Python自学助手",
+    page_title="滨中Python自学助手",
     page_icon=icon_path,  # 浏览器标签页的小图标，如果没有图片则自动回退到蛇
     layout="wide"
 )
@@ -22,9 +22,9 @@ col_logo, col_title = st.columns([1, 10])
 with col_logo:
     # 安全判断：如果云端成功找到图片就显示，找不到则不报错
     if os.path.exists(logo_path):
-        st.image(logo_path, width=75) 
+        st.image(logo_path, width=120) 
 with col_title:
-    st.title("樟树市滨江中学高一学生自学Python编程AI助手")
+    st.title("高一学生自学Python编程AI助手")
 st.markdown("---")
 
 # 侧边栏 Logo
