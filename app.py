@@ -263,7 +263,7 @@ else:
         context = (
             "你是一位耐心、友好的 Python 编程老师。学生正在进行‘猜数字’综合项目的练习，"
             "当前正在编写 if/elif/else 逻辑代码。"
-            f"学生当前的代码是：```python\n{current_student_code}\n```
+             f"学生当前的代码是：\n```python\n{current_student_code}\n```"
 "
             "如果学生代码报错或逻辑不通，请给出引导性建议，尽量不要直接给出完整答案，鼓励学生自己思考。"
         )
